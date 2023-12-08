@@ -1,12 +1,12 @@
-str1len=8
-str2len=5
+str1len=9
+str2len=8
 
 .data
-    str1: .asciiz "fortnite"
-    str2: .asciiz "fortn"
+    str1: .asciiz "Saturday"
+    str2: .asciiz "Sundays"
 
     newline: .asciiz "\n"
-    space: .asciiz "_"
+    space: .asciiz " "
 
 .text
 .globl main
@@ -87,14 +87,11 @@ levenshtein:
             
             # check char at str1
             add $t3, $t1, $s0
-            addi $t3, $t3, -1
-            # TODO do a negative offset because it is cool
-            lb $t4, 0($t3)
+            lb $t4, -1($t3)
 
             # check char at str2
             add $t3, $t2, $s1
-            addi $t3, $t3, -1
-            lb $t5, 0($t3)
+            lb $t5, -1($t3)
 
             # determine if both strings contain the same character
             sub $t4, $t4, $t5
@@ -102,16 +99,17 @@ levenshtein:
             # characters are not equal
             # i * (str1len + 1) + j -> arr[i][j]
             
-            # arr[i-1][j]
+            # arr[i][j]
             mul $t3, $s2, $t2
             add $t3, $t3, $sp
-            sub $t3, $t3, $s2
             add $t3, $t3, $t1
+
+            # arr[i-1][j]
+            sub $t3, $t3, $s2
             lb $s4, 0($t3)
 
             # arr[i-1][j-1]            
-            addi $t3, $t3, -1
-            lb $t4, 0($t3)
+            lb $t4, -1($t3)
 
             bge $t4, $s4, skipsmallest1
             #set smallest
@@ -120,7 +118,7 @@ levenshtein:
 
             # arr[i][j-1]
             add $t3, $t3, $s2
-            lb $t4, 0($t3)
+            lb $t4, -1($t3)
 
             bge $t4, $s4, skipsmallest2
             # set smallest 
@@ -130,7 +128,6 @@ levenshtein:
             # add 1 to smallest (replacement, insertion, or deletion operation)
             addi $s4, $s4, 1
             # arr[i][j]
-            addi $t3, $t3, 1
             sb $s4, 0($t3)
 
             j charequalexit
@@ -138,13 +135,12 @@ levenshtein:
             # load arr[i-1][j-1]
             mul $t3, $s2, $t2
             add $t3, $t3, $sp
-            sub $t3, $t3, $s2
             add $t3, $t3, $t1
-            addi $t3, $t3, -1
-            lb $s4, 0($t3)
 
-            add $t3, $t3, $t2
-            addi $t3, $t3, 1
+            sub $t3, $t3, $s2
+            lb $s4, -1($t3)
+
+            add $t3, $t3, $s2
             sb $s4, 0($t3)
 
             charequalexit:
@@ -158,25 +154,25 @@ levenshtein:
 
     exitstr2loop:
 
-    li $t6, 0
+    li $t2, 0
     iloop:
-        bge $t6, $s3, endiloop
-        li $t7, 0
+        bge $t2, $s3, endiloop
+        li $t1, 0
         jloop:
-            bge $t7, $s2, endjloop
+            bge $t1, $s2, endjloop
             
-            mul $t5, $t6, $s2
-            add $t5, $t5, $sp
-            add $t5, $t5, $t7
+            mul $t3, $t2, $s2
+            add $t3, $t3, $sp
+            add $t3, $t3, $t1
 
-            lb $a0, 0($t5)
+            lb $a0, 0($t3)
             li $v0, 1
             syscall
             li $v0, 4
             la $a0, space
             syscall
 
-            add $t7, $t7, 1
+            add $t1, $t1, 1
             j jloop
         endjloop:
 
@@ -184,7 +180,7 @@ levenshtein:
         la $a0, newline
         syscall
 
-        addi $t6, $t6, 1
+        addi $t2, $t2, 1
         j iloop
     endiloop:
 

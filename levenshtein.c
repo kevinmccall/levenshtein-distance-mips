@@ -41,10 +41,10 @@ int levenshtein_dist(const char* str1, const char* str2) {
 }
 
 int main() {
-    // char* string1 = "Saturday";
-    // char* string2 = "Sundays";
-    char* string1 = "fix";
-    char* string2 = "win";
+    char* string1 = "Saturday";
+    char* string2 = "Sundays";
+    // char* string1 = "fix";
+    // char* string2 = "win";
     int distance = levenshtein_dist(string1, string2);
     printf("levenshtein distance: %d\n", distance);
     return 0;
