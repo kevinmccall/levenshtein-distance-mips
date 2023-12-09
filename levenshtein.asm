@@ -1,22 +1,50 @@
-str1len=9
-str2len=8
+MAX_STRING_SIZE = 100
 
 .data
-    str1: .asciiz "Saturday"
-    str2: .asciiz "Sundays"
+    str1: .space MAX_STRING_SIZE
+    str2: .space MAX_STRING_SIZE
 
     newline: .asciiz "\n"
     space: .asciiz " "
 
+    prompt1: .asciiz "Enter string #1 to be compared: "
+    prompt2: .asciiz "Enter string #2: "
+    prompt3: .asciiz "Bottom-up recursion table:\n"
+    prompt4: .asciiz "Total Levenshtein distance: "
+
 .text
 .globl main
 main:
+    li $v0, 4
+    la $a0, prompt1
+    syscall
+
+    li $v0, 8
+    la $a0, str1
+    li $a1, MAX_STRING_SIZE
+    syscall
+
+    li $v0, 4
+    la $a0, prompt2
+    syscall
+
+    li $v0, 8
+    la $a0, str2
+    li $a1, MAX_STRING_SIZE
+    syscall
+
     la $a0, str1
     la $a1, str2
 
     jal levenshtein
 
-    move $a0, $v0
+    move $s1, $v0
+
+    li $v0, 4
+    la $a0, prompt4
+    syscall
+
+    move $a0, $s1
     li $v0, 1
     syscall
 
@@ -37,6 +65,19 @@ main:
 # $t3 -> temp reg for address calculations
 # $t4 -> temp reg for calculating string stuff
 # $t5 -> temp reg for calculating string stuff
+
+strlen:
+    li $v0, 0 # initialize the count to zero
+    loop:
+        lbu $t1, 0($a0) # load the next character into t1
+        beqz $t1, exitstrlen # check for the null character
+        addi $a0, $a0, 1 # increment the string pointer
+        addi $v0, $v0, 1 # increment the count
+        j loop # return to the top of the loop
+    exitstrlen:
+    jr $ra
+
+
 levenshtein:
     addi $sp, $sp, -20
     sw $s0, 0($sp)
@@ -44,14 +85,20 @@ levenshtein:
     sw $s2, 8($sp)
     sw $s3, 12($sp)
     sw $s4, 16($sp)
-    # TODO do the saving registers jazz
+
+    addi $sp, $sp, -4
+    sw $ra, 0($sp)
 
     move $s0, $a0
     move $s1, $a1
-    li $s2, str1len
-    addi $s2, $s2, 1
-    li $s3, str2len
-    addi $s3, $s3, 1
+    jal strlen
+    addi $s2, $v0, 1
+    move $a0, $s1
+    jal strlen
+    addi $s3, $v0, 1
+
+    lw $ra, 0($sp)
+    addi $sp, $sp, 4
 
     mul $t0, $s2, $s3
     sub $sp, $sp, $t0
@@ -154,6 +201,9 @@ levenshtein:
 
     exitstr2loop:
 
+    li $v0, 4
+    la $a0, prompt3
+    syscall
     li $t2, 0
     iloop:
         bge $t2, $s3, endiloop
