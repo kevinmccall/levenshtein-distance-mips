@@ -1,8 +1,9 @@
 # Levenshtein Distance in MIPS Assembly
 
-This is a program that implements bottom up recursion in the assembly level
-mips.
+This is a program that implements bottom-up recursion at the assembly level
+MIPS.
 
-To run, use qtSpim and input two strings from STDIN to be compared.
+To run, use qtSpim to load levenshtein.asm, then input two strings from
+STDIN to be compared.
 
-My C source code I based the program on is included as well. Why not?
+The C source code I wrote for this program is also included. Why not?
